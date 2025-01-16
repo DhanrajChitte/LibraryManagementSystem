@@ -10,6 +10,7 @@ import com.LibraryManagementApplication.LibraryManagementApplication.services.Au
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLOutput;
 import java.util.List;
 
 @Service
@@ -19,41 +20,31 @@ public class AuthorServiceImpl implements AuthorService
     private AuthorRepository authorRepository;
 
     @Override
-    public Author createAuthor(Author author) {
+    public Author createAuthor(Author author)
+    {
         if (author == null || author.getName() == null || author.getName().isEmpty())
         {
+            //System.out.println("Author name must be required");
             throw new CustomExceptions.BadRequestException("Author details are invalid.");
         }
 
         if (authorRepository.existsById(author.getId()))
         {
-            throw new CustomExceptions.ResourceNotFoundException("Author with ID " + author.getId() + " already exists.");
+            throw new CustomExceptions.ResourceNotFoundException("Author with ID" + author.getId() + " already exists.");
         }
-        try
-        {
             return authorRepository.save(author);
-        }
-        catch (Exception ex) {
-            throw new CustomExceptions.InternalServerException("Error occurred while saving the author: " + ex.getMessage());
-        }
     }
-
-
-  /*@Override
-    public Author createAuthor(Author author)
-    {
-        // Check if the author already exists (based on some business rule)
-        if (authorRepository.existsById(author.getId())) {
-            throw new CustomExceptions.ResourceNotFoundException ("Author with ID already exists.");
-        }
-        return authorRepository.save(author);
-    }*/
 
    @Override
     public List <Author> getAllAuthors()
     {
-        return authorRepository.findAll();
-    }
+        List<Author> authors=authorRepository.findAll();
+        if(authors.isEmpty())
+        {
+            throw new CustomExceptions.ResourceNotFoundException("No Authors Found in the System");
+        }
+        return authors;
+     }
 
     @Override
     public Author getAuthorById(String id)
@@ -65,11 +56,20 @@ public class AuthorServiceImpl implements AuthorService
     @Override
     public Author updateAuthor(String id, Author author)
     {
+        // Fetch the existing author or throw an exception if not found
         Author existingAuthor = getAuthorById(id);
-        existingAuthor.setName(author.getName());
-        existingAuthor.setBio(author.getBio());
+
+        // Update only the modified fields
+        if (author.getName() != null && !author.getName().isEmpty()) {
+            existingAuthor.setName(author.getName());
+        }
+        if (author.getBio() != null && !author.getBio().isEmpty()) {
+            existingAuthor.setBio(author.getBio());
+        }
+        // Save and return the updated author
         return authorRepository.save(existingAuthor);
     }
+
 
     @Override
     public void deleteAuthor(String id)

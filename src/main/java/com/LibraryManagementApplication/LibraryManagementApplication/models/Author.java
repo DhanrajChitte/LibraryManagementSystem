@@ -21,6 +21,7 @@ import java.util.UUID;
 
         public Author()
         {
+
             this.id = UUID.randomUUID().toString(); // Auto-generate ID
         }
 
@@ -31,15 +32,18 @@ import java.util.UUID;
             this.bio=bio;
         }
 
-        public String getId() {
+        public String getId()
+        {
             return id;
         }
 
-        public void setId(String id) {
+        public void setId(String id)
+        {
             this.id = id;
         }
 
-        public String getName() {
+        public String getName()
+        {
             return name;
         }
 

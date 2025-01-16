@@ -1,6 +1,6 @@
 package com.LibraryManagementApplication.LibraryManagementApplication.controllers;
 
-import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.Response;
+import com.LibraryManagementApplication.LibraryManagementApplication.models.Response;
 import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.CustomExceptions;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Book;
 import com.LibraryManagementApplication.LibraryManagementApplication.services.impl.BookServiceImpl;

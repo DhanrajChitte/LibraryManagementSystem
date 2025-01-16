@@ -1,5 +1,6 @@
 package com.LibraryManagementApplication.LibraryManagementApplication.exceptions;
 
+import com.LibraryManagementApplication.LibraryManagementApplication.models.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -8,11 +9,13 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler
+{
 
     @ExceptionHandler(CustomExceptions.ResourceNotFoundException.class)
     public ResponseEntity<Response<Object>> handleResourceNotFoundException(
-            CustomExceptions.ResourceNotFoundException ex, WebRequest request) {
+            CustomExceptions.ResourceNotFoundException ex, WebRequest request)
+    {
 
         Response<Object> response = new Response<>();
         response.setSuccess(false);

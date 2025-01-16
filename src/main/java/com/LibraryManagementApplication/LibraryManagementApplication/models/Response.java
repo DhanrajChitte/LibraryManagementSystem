@@ -1,4 +1,4 @@
-package com.LibraryManagementApplication.LibraryManagementApplication.exceptions;
+package com.LibraryManagementApplication.LibraryManagementApplication.models;
 
 public class Response<T> {
     private boolean success;

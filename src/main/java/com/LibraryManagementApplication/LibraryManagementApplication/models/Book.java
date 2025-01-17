@@ -26,6 +26,7 @@ public class Book
 
     public Book()
     {
+
         this.id = UUID.randomUUID().toString(); // Auto-generate ID
     }
 

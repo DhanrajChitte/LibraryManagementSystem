@@ -146,11 +146,12 @@ public class BookController
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Book>>> filterBook(@RequestParam(required=true) String title)
+    public ResponseEntity<Response<List<Book>>> filterBook(@RequestParam(required=false) String title,
+                  @RequestParam(required = false)String genre)
     {
         Response<List<Book>> response = new Response<>();
         try {
-            List<Book> books = bookService.filterBooks(title);
+            List<Book> books = bookService.filterBooks(title,genre);
             // Success response (handled by GlobalExceptionHandler for exceptions)
             //Response<List<Book>> response = new Response<>();
             response.setSuccess(true);

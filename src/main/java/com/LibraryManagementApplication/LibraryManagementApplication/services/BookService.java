@@ -18,5 +18,5 @@ public interface BookService
 
     public List<Book> getBooksByAuthor(String authorId);
 
-    List<Book> filterBooks(String title);
+    List<Book> filterBooks(String title,String genre);
 }

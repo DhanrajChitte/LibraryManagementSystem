@@ -109,7 +109,7 @@ public class BookServiceImpl implements BookService
     @Override
     public List<Book> filterBooks(String title)
     {
-        if (title == null || title.trim().isEmpty())
+        if (title.trim().isEmpty())
         {
             throw new CustomExceptions.BadRequestException("Title cannot be null or empty.");
         }
@@ -118,16 +118,14 @@ public class BookServiceImpl implements BookService
 
         // Filter logic
         List<Book> filteredBooks = books.stream()
-                .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(book -> book.getTitle().toLowerCase().contains(title.trim().toLowerCase()))
                 .collect(Collectors.toList());
-
 
         // Check if filtered list is empty
         if (filteredBooks.isEmpty())
         {
             throw new CustomExceptions.ResourceNotFoundException("Book with title " + title + " not found.");
         }
-
             //throw new CustomExceptions.InternalServerException("An unexpected error occurred while filtering books.");
         return filteredBooks;
     }

@@ -145,26 +145,20 @@ public class BookController
         }
     }
 
-   /* @GetMapping("/author/{authorId}")
-    public ResponseEntity<List<Book>> getBooksByAuthor(@PathVariable String authorId)
-    {
-        return ResponseEntity.ok(bookService.getBooksByAuthor(authorId));
-    }*/
-
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Book>>> filterBooks(@RequestParam(required = false) String title)
+    public ResponseEntity<Response<List<Book>>> filterBook(@RequestParam(required=true) String title)
     {
         Response<List<Book>> response = new Response<>();
         try {
             List<Book> books = bookService.filterBooks(title);
             // Success response (handled by GlobalExceptionHandler for exceptions)
-            // Response<List<Book>> response = new Response<>();
+            //Response<List<Book>> response = new Response<>();
             response.setSuccess(true);
             response.setMessage("Books filtered successfully.");
             // response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             response.setData(books);
-            //return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
         catch (CustomExceptions.ResourceNotFoundException e)
         {
@@ -183,6 +177,6 @@ public class BookController
         {
             throw new CustomExceptions.InternalServerException("An unexpected error occurred while filtering books.");
         }
-        return new ResponseEntity<>(response,HttpStatus.valueOf(response.getHttpErrorCode()));
+        //return new ResponseEntity<>(response,HttpStatus.valueOf(response.getHttpErrorCode()));
     }
 }

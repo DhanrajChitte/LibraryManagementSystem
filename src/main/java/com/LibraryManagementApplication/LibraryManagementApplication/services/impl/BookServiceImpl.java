@@ -112,9 +112,9 @@ public class BookServiceImpl implements BookService
     {
 
         // Check if the title parameter is empty or invalid
-        if (title == null || title.trim().isEmpty()) {
-            throw new CustomExceptions.BadRequestException("The title parameter cannot be empty.");
-        }
+        //if (title == null || title.trim().isEmpty()) {
+          //  throw new CustomExceptions.BadRequestException("The title parameter cannot be empty.");
+        //}
 
         // Fetch all books and filter by title
         List<Book> books = bookRepository.findAll();
@@ -127,6 +127,10 @@ public class BookServiceImpl implements BookService
         if (filteredBooks.isEmpty()) {
             throw new CustomExceptions.ResourceNotFoundException("No books found with the title: " + title);
         }
+
+        if (title == null || title.trim().isEmpty()) {
+              throw new CustomExceptions.BadRequestException("The title parameter cannot be empty.");
+            }
 
         return filteredBooks;
     }

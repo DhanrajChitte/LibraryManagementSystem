@@ -33,7 +33,7 @@ public class BookController
     @PostMapping
     public ResponseEntity<Response<Book>> createBook(@Valid @RequestBody Book book) {
         Response<Book> response = new Response<>();
-        try {
+       // try {
             // Directly call the service method
             Book createBook = bookService.createBook(book);
 
@@ -43,12 +43,12 @@ public class BookController
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+     /*   }
         catch (CustomExceptions.BadRequestException e) {
             throw new CustomExceptions.BadRequestException("Book Title must required");
         } catch (CustomExceptions.ResourceNotFoundException e) {
             throw new CustomExceptions.ResourceNotFoundException("Book with ID " + book.getId() + " already exists.");
-        }
+        }*/
     }
 
     @GetMapping
@@ -146,21 +146,33 @@ public class BookController
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Book>>> filterBooksByTitle(@RequestParam(required=false) String title
-                  )
-    {
+    public ResponseEntity<Response<List<Book>>> filterBooks(@RequestParam(required=false) String title,
+             @RequestParam(required = false) String genre) {
         Response<List<Book>> response = new Response<>();
-        try {
-            List<Book> books = bookService.filterBooksByTitle(title);
-            // Success response (handled by GlobalExceptionHandler for exceptions)
-            //Response<List<Book>> response = new Response<>();
-            response.setSuccess(true);
+        List<Book> books=null;
+
+        if (title != null && !title.trim().isEmpty())
+        {
+            books= bookService.filterBooksByTitle(title); // Call title filter logic
             response.setMessage("Books filtered successfully by the title");
-            // response.setError(null);
-            response.setHttpErrorCode(HttpStatus.OK.value());
-            response.setData(books);
-            return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        if (genre != null && !genre.trim().isEmpty())
+        {
+            books = bookService.filterBooksByGenre(genre); // Call genre filter logic
+            response.setMessage("Books filtered successfully by the genre");
+        }
+        //try {
+        //List<Book> books = bookService.filterBooksByTitle(title);
+        // Success response (handled by GlobalExceptionHandler for exceptions)
+        //Response<List<Book>> response = new Response<>();
+        response.setSuccess(true);
+        //response.setMessage("Books filtered successfully by the title");
+        // response.setError(null);
+        response.setHttpErrorCode(HttpStatus.OK.value());
+        response.setData(books);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+       /* }
         catch (CustomExceptions.ResourceNotFoundException e)
         {
             System.out.println("No books found with the given title"+title);
@@ -172,12 +184,11 @@ public class BookController
             throw new CustomExceptions.BadRequestException ("Invalid request parameters: " + e.getMessage());
             //response.setError(Ba);
 
-        }
-    }
+        }*/
 
-    @GetMapping("/filterbooksbygenre")
-    public ResponseEntity<Response<List<Book>>> filterBooksByGenre(@RequestParam(required=false) String genre,
-                                                                   )
+
+    /*@GetMapping("/filterbooksbygenre")
+    public ResponseEntity<Response<List<Book>>> filterBooksByGenre(@RequestParam(required=false) String genre)
     {
         Response<List<Book>> response = new Response<>();
         try {
@@ -203,7 +214,7 @@ public class BookController
             //response.setError(Ba);
 
         }
-    }
+    }*/
 
     @GetMapping("/filterbooksbypublishedyear")
     public ResponseEntity<Response<List<Book>>> filterBooksByPublishedYear(@RequestParam(required=false) Integer publishedYear) {

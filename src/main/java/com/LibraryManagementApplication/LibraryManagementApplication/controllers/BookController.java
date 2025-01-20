@@ -19,7 +19,7 @@ import java.util.List;
 public class BookController
 {
     @Autowired
-    private final BookServiceImpl bookService;
+    private BookServiceImpl bookService;
 
 
 
@@ -146,16 +146,16 @@ public class BookController
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Book>>> filterBook(@RequestParam(required=false) String title,
-                  @RequestParam(required = false)String genre)
+    public ResponseEntity<Response<List<Book>>> filterBooksByTitle(@RequestParam(required=false) String title
+                  )
     {
         Response<List<Book>> response = new Response<>();
         try {
-            List<Book> books = bookService.filterBooks(title,genre);
+            List<Book> books = bookService.filterBooksByTitle(title);
             // Success response (handled by GlobalExceptionHandler for exceptions)
             //Response<List<Book>> response = new Response<>();
             response.setSuccess(true);
-            response.setMessage("Books filtered successfully.");
+            response.setMessage("Books filtered successfully by the title");
             // response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             response.setData(books);
@@ -163,8 +163,8 @@ public class BookController
         }
         catch (CustomExceptions.ResourceNotFoundException e)
         {
-            System.out.println("No books found with the title: " + title);
-            throw new CustomExceptions.ResourceNotFoundException("No books found with the title: " + title);
+            System.out.println("No books found with the given title"+title);
+            throw new CustomExceptions.ResourceNotFoundException("No books found with the given title "+title);
 
         }
         catch(CustomExceptions.BadRequestException e)
@@ -173,11 +173,183 @@ public class BookController
             //response.setError(Ba);
 
         }
-
-        catch (CustomExceptions.InternalServerException e)
-        {
-            throw new CustomExceptions.InternalServerException("An unexpected error occurred while filtering books.");
-        }
-        //return new ResponseEntity<>(response,HttpStatus.valueOf(response.getHttpErrorCode()));
     }
+
+    @GetMapping("/filterbooksbygenre")
+    public ResponseEntity<Response<List<Book>>> filterBooksByGenre(@RequestParam(required=false) String genre,
+                                                                   )
+    {
+        Response<List<Book>> response = new Response<>();
+        try {
+            List<Book> books = bookService.filterBooksByGenre(genre);//conditions here
+            // Success response (handled by GlobalExceptionHandler for exceptions)
+            //Response<List<Book>> response = new Response<>();
+            response.setSuccess(true);
+            response.setMessage("Books filtered successfully by the genre");
+            // response.setError(null);
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (CustomExceptions.ResourceNotFoundException e)
+        {
+            System.out.println("No books found with the given genre" +genre);
+            throw new CustomExceptions.ResourceNotFoundException("No books found with the given genre " + genre);
+
+        }
+        catch(CustomExceptions.BadRequestException e)
+        {
+            throw new CustomExceptions.BadRequestException ("Invalid request parameters: " + e.getMessage());
+            //response.setError(Ba);
+
+        }
+    }
+
+    @GetMapping("/filterbooksbypublishedyear")
+    public ResponseEntity<Response<List<Book>>> filterBooksByPublishedYear(@RequestParam(required=false) Integer publishedYear) {
+        Response<List<Book>> response = new Response<>();
+        try {
+            List<Book> books = bookService.filterBooksByYear(publishedYear);
+            // Success response (handled by GlobalExceptionHandler for exceptions)
+            //Response<List<Book>> response = new Response<>();
+            response.setSuccess(true);
+            response.setMessage("Books filtered successfully by the published year");
+            // response.setError(null);
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (CustomExceptions.ResourceNotFoundException e) {
+            //System.out.println("No books found with the given genre" +genre);
+            throw new CustomExceptions.ResourceNotFoundException("No books found with the given published year " + publishedYear);
+
+        } catch (CustomExceptions.BadRequestException e) {
+            throw new CustomExceptions.BadRequestException("Invalid request parameters: " + e.getMessage());
+            //response.setError(Ba);
+
+        }
+
+    }
+
+    @GetMapping("/filterBooksByYearRange")
+    public ResponseEntity<Response<List<Book>>> filterBooksByYearRange(@RequestParam(required=false) Integer startYear,
+                             @RequestParam (required = false) Integer endYear) {
+        Response<List<Book>> response = new Response<>();
+        try {
+            List<Book> books = bookService.filterBooksByYearRange(startYear,endYear);
+            // Success response (handled by GlobalExceptionHandler for exceptions)
+            //Response<List<Book>> response = new Response<>();
+            response.setSuccess(true);
+            response.setMessage("Books filtered successfully by the given start and end year");
+            // response.setError(null);
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (CustomExceptions.ResourceNotFoundException e) {
+            //System.out.println("No books found with the given genre" +genre);
+            throw new CustomExceptions.ResourceNotFoundException("No books found with the given startYear: " + startYear + "and endYear:" +endYear);
+
+        } catch (CustomExceptions.BadRequestException e) {
+            throw new CustomExceptions.BadRequestException("Invalid request parameters: " + e.getMessage());
+            //response.setError(Ba);
+
+        }
+    }
+
+    @GetMapping("/bookssorted")
+    public ResponseEntity<Response<List<Book>>> getBooks(@RequestParam(required = false, defaultValue = "title") String sortBy)
+    {
+        Response<List<Book>> response = new Response<>();
+        try {
+            List<Book> books = bookService.getSortedBooks(sortBy);
+            response.setSuccess(true);
+            response.setMessage("Books retrieved and sorted successfully");
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch(CustomExceptions.ResourceNotFoundException e)
+        {
+            throw new CustomExceptions.ResourceNotFoundException("No books found: " + e.getMessage());
+        }
+
+        catch(CustomExceptions.BadRequestException e)
+        {
+            throw new CustomExceptions.BadRequestException("Invalid request parameters: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/bookssortorder")
+    public ResponseEntity<Response<List<Book>>> getSortedOrderBooks(@RequestParam(required = false, defaultValue = "title") String sortBy,
+    @RequestParam(required = false, defaultValue = "asc") String sortOrder)
+    {
+        Response<List<Book>> response = new Response<>();
+        try {
+            List<Book> books = bookService.getSortedOrderBooks(sortBy,sortOrder);
+            response.setSuccess(true);
+            response.setMessage("Books retrieved and sorted successfully");
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch(CustomExceptions.ResourceNotFoundException e)
+        {
+            throw new CustomExceptions.ResourceNotFoundException("No books found: " + e.getMessage());
+        }
+
+        catch(CustomExceptions.BadRequestException e)
+        {
+            throw new CustomExceptions.BadRequestException("Invalid request parameters: " + e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/booksbylimit")
+    public ResponseEntity<Response<List<Book>>> getBooksLimits(
+            @RequestParam(required = false, defaultValue = "4") int limit) {
+        Response<List<Book>> response = new Response<>();
+        try {
+            List<Book> books = bookService.getBooksLimits(limit);
+            response.setSuccess(true);
+            response.setMessage("Books retrieved successfully");
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (CustomExceptions.BadRequestException e)
+        {
+            throw new CustomExceptions.BadRequestException("Invalid request parameters: " + e.getMessage());
+        }
+
+        catch(CustomExceptions.ResourceNotFoundException e)
+        {
+            throw new CustomExceptions.ResourceNotFoundException("No books found in the database");
+        }
+    }
+
+    @GetMapping("/booksbyoffset")
+    public ResponseEntity<Response<List<Book>>> getBooksOffset(
+            @RequestParam(required = false, defaultValue = "0") int offset) {
+        Response<List<Book>> response = new Response<>();
+//        try {
+            List<Book> books = bookService.getBooksOffset(offset);
+            response.setSuccess(true);
+            response.setMessage("Books retrieved successfully");
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+   /*     }
+        catch (CustomExceptions.BadRequestException e)
+        {
+            throw new CustomExceptions.BadRequestException("Invalid request parameters: " + e.getMessage());
+        }
+
+        catch(CustomExceptions.ResourceNotFoundException e)
+        {
+            throw new CustomExceptions.ResourceNotFoundException("No books found in the database");
+        } */
+    }
+
+
 }

@@ -54,7 +54,7 @@ public class BookServiceImpl implements BookService
     @Override
     public Book getBookById(String id)
     {
-        System.out.println("No books found with the given id:"+id);
+        System.out.println("No books found with the given id:" +id);
         return bookRepository.findById(id)
                 .orElseThrow(() -> new CustomExceptions.ResourceNotFoundException("Book with ID " + id + " not found."));
     }
@@ -194,7 +194,7 @@ public class BookServiceImpl implements BookService
 
         // Throw exception if no books match the genre
         if (filteredBooks.isEmpty()) {
-            throw new CustomExceptions.ResourceNotFoundException("No books found with the provided startYear and endYear: " + startYear +endYear);
+            throw new CustomExceptions.ResourceNotFoundException("No books found with the provided startYear:" + startYear + "endYear" +endYear);
         }
 
         return filteredBooks;
@@ -280,7 +280,7 @@ public class BookServiceImpl implements BookService
     @Override
     public List<Book> getBooksLimits(int limit)
     {
-        if (limit <= 0)
+        if (limit<=0)
         {
             throw new CustomExceptions.BadRequestException("Limit must be greater than 0");
         }

@@ -18,22 +18,21 @@ public interface BookService
 
     public List<Book> getBooksByAuthor(String authorId);
 
-    List<Book> filterBooksByTitle(String title);
+    List<Book> filterBooksByTitle(List<Book>books,String title);
 
-    List<Book> filterBooksByGenre(String genre);
+    List<Book> filterBooksByGenre(List<Book>books,String genre);
 
-    List<Book> filterBooksByYear(Integer publishedYear);
+    List<Book> filterBooksByYear(List<Book>books,Integer publishedYear);
 
-    List<Book> filterBooksByYearRange(Integer startYear,Integer endYear);
+    List<Book> filterBooksByYearRange(List<Book> books,Integer startYear,Integer endYear);
 
-    List<Book> getSortedBooks(String sortBy);
 
-    List<Book> getSortedOrderBooks(String sortBy,String sortOrder);
 
-    List<Book> getBooksLimits(int limit);
+    List<Book> getSortedOrderBooks(List<Book> books,String sortBy,String sortOrder);
 
-    List<Book> getBooksOffset(int offset);
 
-    //List<Book> getBooksLimitOffset(int limit,int offset);
+    List<Book> filterBooks(String title,String genre,Integer publishedYear,Integer startYear,Integer endYear);
+
+
 
 }

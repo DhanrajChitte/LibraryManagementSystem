@@ -15,53 +15,43 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class BookServiceImpl implements BookService
-{
+public class BookServiceImpl implements BookService {
     @Autowired
     private final BookRepository bookRepository;
 
-    public BookServiceImpl(BookRepository bookRepository)
-
-    {
+    public BookServiceImpl(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
     }
 
     @Override
-    public Book createBook(Book book)
-    {
-        if(book == null || book.getTitle() == null || book.getTitle().isEmpty())
-        {
+    public Book createBook(Book book) {
+        if (book == null || book.getTitle() == null || book.getTitle().isEmpty()) {
             throw new CustomExceptions.BadRequestException("Book title must be required");
         }
-        if (bookRepository.existsById(book.getId()))
-        {
+        if (bookRepository.existsById(book.getId())) {
             throw new CustomExceptions.ResourceNotFoundException("Book with ID" + book.getId() + " already exists.");
         }
         return bookRepository.save(book);
     }
 
     @Override
-    public List <Book> getAllBooks()
-    {
-        List<Book> books=bookRepository.findAll();
-        if(books.isEmpty())
-        {
+    public List<Book> getAllBooks() {
+        List<Book> books = bookRepository.findAll();
+        if (books.isEmpty()) {
             throw new CustomExceptions.ResourceNotFoundException("No books Found in the System");
         }
         return books;
     }
 
     @Override
-    public Book getBookById(String id)
-    {
-        System.out.println("No books found with the given id:" +id);
+    public Book getBookById(String id) {
+        System.out.println("No books found with the given id:" + id);
         return bookRepository.findById(id)
                 .orElseThrow(() -> new CustomExceptions.ResourceNotFoundException("Book with ID " + id + " not found."));
     }
 
     @Override
-    public Book updateBook(String id, Book book)
-    {
+    public Book updateBook(String id, Book book) {
         // Fetch the existing book or throw an exception if not found
         Book existingBook = getBookById(id);
 
@@ -74,13 +64,11 @@ public class BookServiceImpl implements BookService
             existingBook.setAuthorId(book.getAuthorId());
         }
 
-        if (book.getGenre() != null && !book.getGenre().isEmpty())
-        {
+        if (book.getGenre() != null && !book.getGenre().isEmpty()) {
             existingBook.setGenre(book.getGenre());
         }
 
-        if (book.getPublishedYear()!=null)
-        {
+        if (book.getPublishedYear() != null) {
             existingBook.setPublishedYear(book.getPublishedYear());
         }
 
@@ -89,18 +77,15 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
-    public void deleteBook(String id)
-    {
+    public void deleteBook(String id) {
         Book book = getBookById(id);
         bookRepository.delete(book);
     }
 
     @Override
-    public List<Book> getBooksByAuthor(String authorId)
-    {
-        List<Book>book=bookRepository.findByAuthorId(authorId);
-        if(book.isEmpty())
-        {
+    public List<Book> getBooksByAuthor(String authorId) {
+        List<Book> book = bookRepository.findByAuthorId(authorId);
+        if (book.isEmpty()) {
             throw new CustomExceptions.ResourceNotFoundException("Book not found with author ID: " + authorId);
         }
         return book;
@@ -108,42 +93,52 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
-    public List<Book> filterBooksByTitle(String title)
-    {
-
-        // Check if the title parameter is empty or invalid
-        //if (title == null || title.trim().isEmpty()) {
-          //  throw new CustomExceptions.BadRequestException("The title parameter cannot be empty.");
-        //}
-
-        // Fetch all books and filter by title
+    public List<Book> filterBooks(String title, String genre, Integer publishedYear, Integer startYear, Integer endYear) {
         List<Book> books = bookRepository.findAll();
+
+        if (title != null) {
+            books = filterBooksByTitle(books, title);
+        }
+
+        if (genre != null) {
+            books = filterBooksByGenre(books, genre);
+        }
+
+        if (publishedYear != null) {
+            books = filterBooksByYear(books, publishedYear);
+        }
+
+        if (startYear != null || endYear != null) {
+            books = filterBooksByYearRange(books, startYear, endYear);
+        }
+        return books;
+    }
+
+
+    @Override
+    public List<Book> filterBooksByTitle(List<Book> books, String title) {
+
+        if (title == null || title.trim().isEmpty()) {
+            throw new CustomExceptions.BadRequestException("The title parameter cannot be empty.");
+        }
 
         List<Book> filteredBooks = books.stream()
                 .filter(book -> book.getTitle().toLowerCase().contains(title.trim().toLowerCase()))
                 .collect(Collectors.toList());
 
-        // Throw exception if no books match the title
         if (filteredBooks.isEmpty()) {
             throw new CustomExceptions.ResourceNotFoundException("No books found with the title: " + title);
         }
-
-        if (title == null || title.trim().isEmpty()) {
-              throw new CustomExceptions.BadRequestException("The title parameter cannot be empty.");
-            }
 
         return filteredBooks;
     }
 
     @Override
-    public List<Book> filterBooksByGenre(String genre) {
+    public List<Book> filterBooksByGenre(List<Book> books, String genre) {
 
         if (genre == null || genre.trim().isEmpty()) {
             throw new CustomExceptions.BadRequestException("The genre parameter cannot be empty.");
         }
-
-        // Fetch all books and filter by genre
-        List<Book> books = bookRepository.findAll();
 
         List<Book> filteredBooks = books.stream()
                 .filter(book -> book.getGenre().toLowerCase().contains(genre.trim().toLowerCase()))
@@ -158,18 +153,14 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
-    public List<Book> filterBooksByYear(Integer publishedYear)
-    {
-
+    public List<Book> filterBooksByYear(List<Book> books, Integer publishedYear) {
+        // If published year not give then filter books fix this bug
         if (publishedYear == null) {
             throw new CustomExceptions.BadRequestException("The published year parameter cannot be null");
         }
 
-        // Fetch all books and filter by genre
-        List<Book> books = bookRepository.findAll();
-
         List<Book> filteredBooks = books.stream()
-                .filter(book -> book.getPublishedYear()!=null && book.getPublishedYear().equals( publishedYear))
+                .filter(book -> book.getPublishedYear() != null && book.getPublishedYear().equals(publishedYear))
                 .collect(Collectors.toList());
 
         // Throw exception if no books match the genre
@@ -181,107 +172,62 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
-    public List<Book> filterBooksByYearRange(Integer startYear,Integer endYear)
-    {
+    public List<Book> filterBooksByYearRange(List<Book> books, Integer startYear, Integer endYear) {
 
-        if (startYear !=null && endYear!=null && startYear>endYear) {
+        if (startYear != null && endYear != null && startYear > endYear) {
             throw new CustomExceptions.BadRequestException("The startYear cannot be greter than a endYear");
         }
 
-        // Fetch all books and filter by genre
-        List<Book> books = bookRepository.findAll();
-
         List<Book> filteredBooks = books.stream()
-                .filter(book -> (startYear==null || book.getPublishedYear()>=startYear) &&
-                        (endYear==null || book.getPublishedYear()<=endYear))
+                .filter(book -> (startYear == null || book.getPublishedYear() >= startYear) &&
+                        (endYear == null || book.getPublishedYear() <= endYear))
                 .collect(Collectors.toList());
 
         // Throw exception if no books match the genre
         if (filteredBooks.isEmpty()) {
-            throw new CustomExceptions.ResourceNotFoundException("No books found with the provided startYear:" + startYear + "endYear" +endYear);
+            throw new CustomExceptions.ResourceNotFoundException("No books found with the provided startYear: " + startYear + " endYear " + endYear);
         }
 
         return filteredBooks;
     }
 
     @Override
-    public List<Book> getSortedBooks(String sortBy) {
-        // Fetch all books
-        List<Book> books = bookRepository.findAll();
+    public List<Book> getSortedOrderBooks(List<Book> books, String sortBy, String sortOrder) {
 
-        // Check if no books are found
-        if (books.isEmpty())
-        {
-            throw new CustomExceptions.ResourceNotFoundException("No books found in the database.");
-        }
-
-        // Apply sorting: Default is by title, otherwise sort by publishedYear if specified
-        if (sortBy == null || sortBy.isEmpty() || sortBy.equalsIgnoreCase("title")) {
-            books.sort(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER));
-        }
-        else if (sortBy.equalsIgnoreCase("publishedYear"))
-        {
-            books.sort(Comparator.comparing(Book::getPublishedYear));
-        }
-        else
-        {
-            // If sortBy is invalid, throw BadRequestException
+        if (!sortBy.equalsIgnoreCase("title") && !sortBy.equalsIgnoreCase("publishedYear")) {
             throw new CustomExceptions.BadRequestException("Invalid sortBy parameter: " + sortBy);
         }
 
-        return books;
-    }
-
-    @Override
-    public List<Book> getSortedOrderBooks(String sortBy,String sortOrder)
-    {
-      if(sortBy==null || sortBy.isEmpty())
-      {
-          sortBy= "title";
-      }
-
-      else if (!sortBy.equalsIgnoreCase("title") && !sortBy.equalsIgnoreCase("publishedYear")) {
-          throw new CustomExceptions.BadRequestException("Invalid sortBy parameter: " + sortBy);
-      }
-
-      if(sortOrder==null || sortOrder.isEmpty())
-      {
-          sortOrder="asc";
-      }
-
-      List<Book> books=bookRepository.findAll();
-
-      if(books.isEmpty())
-      {
-          throw new CustomExceptions.ResourceNotFoundException("No books find in the database");
-      }
-
-      Comparator<Book>comparator;
-      switch(sortBy.toLowerCase())
-      {
-          case "publishedyear":
-              comparator = Comparator.comparing(Book::getPublishedYear);
-              break;
-          default:
-              comparator = Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER);
-      }
-
-        // Apply sortOrder
-        if (sortOrder.equalsIgnoreCase("desc"))
-        {
-            comparator = comparator.reversed();
-        }
-        else if (!sortOrder.equalsIgnoreCase("asc"))
-        {
+        if (!"asc".equalsIgnoreCase(sortOrder) && !"desc".equalsIgnoreCase(sortOrder)) {
             throw new CustomExceptions.BadRequestException("Invalid sortOrder parameter: " + sortOrder);
         }
 
-        // Sort the books
-        books.sort(comparator);
-        return books;
-      }
+        if (books == null || books.isEmpty()) {
+            throw new CustomExceptions.ResourceNotFoundException("No books available to sort.");
+        }
 
-    @Override
+        Comparator<Book> comparator;
+        if ("publishedYear".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparing(Book::getPublishedYear);
+        } else if ("title".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparing(Book::getTitle);
+        } else {
+            throw new IllegalArgumentException("Invalid sortBy parameter");
+        }
+
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+
+        return books.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+
+    }
+
+}
+
+    /*@Override
     public List<Book> getBooksLimits(int limit)
     {
         if (limit<=0)
@@ -300,7 +246,7 @@ public class BookServiceImpl implements BookService
         return books.stream().limit(limit).collect(Collectors.toList());
     }
 
-    @Override
+   @Override
     public List<Book> getBooksOffset(int offset)
     {
         if (offset < 0)
@@ -317,9 +263,9 @@ public class BookServiceImpl implements BookService
 
         // Limit the results
         return books.stream().skip(offset).collect(Collectors.toList());
-    }
+    }*/
 
-}
+
 
 
 

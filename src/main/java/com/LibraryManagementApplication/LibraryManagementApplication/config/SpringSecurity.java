@@ -1,31 +1,67 @@
 package com.LibraryManagementApplication.LibraryManagementApplication.config;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
 public class SpringSecurity
 {
+    //authentication
+   //Store the user in memory first not in the database
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception
+    public UserDetailsService userDetailsService(PasswordEncoder encoder)
     {
-        httpSecurity.csrf().disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/authors")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .formLogin();
+        UserDetails admin= User.withUsername("Dhanraj")
+                .password(encoder.encode("Dhanraj@0304"))
+                .roles("ADMIN")
+                .build();
 
-        return httpSecurity.build();
+        UserDetails user= User.withUsername("Suyash")
+                .password(encoder.encode ("Suyash@0304"))
+                .roles("USER")  //Not good practice to direct give the password
+                .build();
+
+        return new InMemoryUserDetailsManager(admin,user);
     }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
+    {
+        return http.csrf(AbstractHttpConfigurer::disable)
+                  .authorizeHttpRequests(authorize->authorize
+                  //.requestMatchers("/api/authors").permitAll()
+                  //.requestMatchers("/api/authors/**").authenticated()
+                                  .anyRequest().authenticated() //Secure all the endpoints
+                  )
+                 .httpBasic(Customizer.withDefaults())
+                  //.formLogin(Customizer.withDefaults())
+                  .build();
+    }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder()
+    {
+        return new BCryptPasswordEncoder();
+    }
+
+
 
 }

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class AuthorController {
     private AuthorServiceImpl authorService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<Author>> createAuthor(@Valid @RequestBody Author author) {
         Response<Author> response = new Response<>();
         try {
@@ -39,6 +41,7 @@ public class AuthorController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<Response<List<Author>>> getAllAuthors() {
         Response<List<Author>> response = new Response<>();
         try {
@@ -57,6 +60,7 @@ public class AuthorController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<Response<Author>> getAuthorById(@PathVariable String id) {
         Response<Author> response = new Response<>();
         try {
@@ -77,6 +81,7 @@ public class AuthorController {
 
     // PUT: /api/authors/{id}
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<Author>> updateAuthor(@PathVariable String id, @Valid @RequestBody Author author) {
         Response<Author> response = new Response<>();
         try {
@@ -98,7 +103,7 @@ public class AuthorController {
 
     // DELETE: /api/authors/{id}
     @DeleteMapping("/{id}")
-
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<Void>> deleteAuthor(@PathVariable String id) {
         Response<Void> response = new Response<>();
         try {

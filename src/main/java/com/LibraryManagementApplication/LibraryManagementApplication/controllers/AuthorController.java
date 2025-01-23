@@ -3,6 +3,7 @@ package com.LibraryManagementApplication.LibraryManagementApplication.controller
 import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.CustomExceptions;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Response;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Author;
+import com.LibraryManagementApplication.LibraryManagementApplication.models.UserInfo;
 import com.LibraryManagementApplication.LibraryManagementApplication.services.impl.AuthorServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,5 +123,11 @@ public class AuthorController {
             throw new CustomExceptions.ResourceNotFoundException("Author not found with ID: " + id);
         }
 
+    }
+
+    @PostMapping("/new")
+    public String addNewUser(@RequestBody UserInfo userInfo)
+    {
+        return authorService.addUser(userInfo);
     }
 }

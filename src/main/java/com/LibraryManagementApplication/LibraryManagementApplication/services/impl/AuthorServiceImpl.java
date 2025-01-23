@@ -5,9 +5,12 @@ import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.
 //import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.DataNotFoundException;
 //import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.InvalidAuthorDataException;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Author;
+import com.LibraryManagementApplication.LibraryManagementApplication.models.UserInfo;
 import com.LibraryManagementApplication.LibraryManagementApplication.repositories.AuthorRepository;
+import com.LibraryManagementApplication.LibraryManagementApplication.repositories.UserInfoRepository;
 import com.LibraryManagementApplication.LibraryManagementApplication.services.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLOutput;
@@ -18,6 +21,13 @@ public class AuthorServiceImpl implements AuthorService
 {
     @Autowired
     private AuthorRepository authorRepository;
+
+    @Autowired
+    private UserInfoRepository repository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     @Override
     public Author createAuthor(Author author)
@@ -78,5 +88,13 @@ public class AuthorServiceImpl implements AuthorService
     {
         Author author = getAuthorById(id);
         authorRepository.delete(author);
+    }
+
+
+    public String addUser(UserInfo userInfo)
+    {
+        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
+        repository.save(userInfo);
+        return "User added to the System";
     }
 }

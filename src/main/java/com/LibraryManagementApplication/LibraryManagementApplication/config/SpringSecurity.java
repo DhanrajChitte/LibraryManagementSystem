@@ -5,6 +5,8 @@ package com.LibraryManagementApplication.LibraryManagementApplication.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,9 +28,9 @@ public class SpringSecurity
     //authentication
    //Store the user in memory first not in the database
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder)
+    public UserDetailsService userDetailsService()
     {
-        UserDetails admin= User.withUsername("Dhanraj")
+     /*   UserDetails admin= User.withUsername("Dhanraj")
                 .password(encoder.encode("Dhanraj@0304"))
                 .roles("ADMIN")
                 .build();
@@ -38,7 +40,8 @@ public class SpringSecurity
                 .roles("USER")  //Not good practice to direct give the password
                 .build();
 
-        return new InMemoryUserDetailsManager(admin,user);
+        return new InMemoryUserDetailsManager(admin,user); */
+        return new UserInfoUserDetailsService();
     }
 
     @Bean
@@ -46,12 +49,12 @@ public class SpringSecurity
     {
         return http.csrf(AbstractHttpConfigurer::disable)
                   .authorizeHttpRequests(authorize->authorize
-                  //.requestMatchers("/api/authors").permitAll()
+                  .requestMatchers("/api/authors/new").permitAll()
                   //.requestMatchers("/api/authors/**").authenticated()
-                                  .anyRequest().authenticated() //Secure all the endpoints
+                                  .anyRequest().authenticated() //Secure all other endpoints
                   )
                  .httpBasic(Customizer.withDefaults())
-                  //.formLogin(Customizer.withDefaults())
+                 // .formLogin(Customizer.withDefaults())
                   .build();
     }
 
@@ -62,6 +65,13 @@ public class SpringSecurity
         return new BCryptPasswordEncoder();
     }
 
-
+    @Bean
+    public AuthenticationProvider authenticationProvider()
+    {
+        DaoAuthenticationProvider authenticationProvider=new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
 
 }

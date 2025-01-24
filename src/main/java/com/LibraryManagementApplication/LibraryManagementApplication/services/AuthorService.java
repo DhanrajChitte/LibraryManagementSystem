@@ -18,4 +18,8 @@ public interface AuthorService
     public void deleteAuthor(String id);
 
     public String addUser(UserInfo userInfo);
+
+    public String generateToken(String username);
+
+    public String extractUsername(String token);
 }

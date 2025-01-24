@@ -1,5 +1,6 @@
 package com.LibraryManagementApplication.LibraryManagementApplication.controllers;
 
+import com.LibraryManagementApplication.LibraryManagementApplication.dto.AuthRequest;
 import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.CustomExceptions;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Response;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Author;
@@ -10,15 +11,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/authors")
-public class AuthorController {
+public class AuthorController
+{
     @Autowired
     private AuthorServiceImpl authorService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -129,5 +138,24 @@ public class AuthorController {
     public String addNewUser(@RequestBody UserInfo userInfo)
     {
         return authorService.addUser(userInfo);
+    }
+
+
+    @PostMapping("/authenticate")
+    public String authenticateAndGetToken(@RequestBody AuthRequest authRequest)
+    {
+        //return the authentication object no need to the if statement
+        Authentication authentication= authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.
+               getUsername(),authRequest.getPassword()));
+
+        if(authentication.isAuthenticated())
+        {
+            return authorService.generateToken(authRequest.getUsername());
+        }
+
+        else {
+            throw new UsernameNotFoundException("Invalid User Request! ");
+        }
+
     }
 }

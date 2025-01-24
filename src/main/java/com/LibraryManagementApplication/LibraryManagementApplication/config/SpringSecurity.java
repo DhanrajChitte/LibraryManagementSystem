@@ -2,16 +2,21 @@ package com.LibraryManagementApplication.LibraryManagementApplication.config;
 
 
 
+import com.LibraryManagementApplication.LibraryManagementApplication.filter.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,12 +24,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SpringSecurity
 {
+    @Autowired
+    private JwtAuthFilter authFilter;
     //authentication
    //Store the user in memory first not in the database
     @Bean
@@ -49,13 +57,18 @@ public class SpringSecurity
     {
         return http.csrf(AbstractHttpConfigurer::disable)
                   .authorizeHttpRequests(authorize->authorize
-                  .requestMatchers("/api/authors/new").permitAll()
+                  .requestMatchers("/api/authors/new","/api/authors/authenticate").permitAll()
                   //.requestMatchers("/api/authors/**").authenticated()
-                                  .anyRequest().authenticated() //Secure all other endpoints
+                                  .anyRequest().authenticated()
                   )
-                 .httpBasic(Customizer.withDefaults())
+              .sessionManagement(session->session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+              )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                // .httpBasic(Customizer.withDefaults())
                  // .formLogin(Customizer.withDefaults())
-                  .build();
+                        .build();
     }
 
 
@@ -72,6 +85,12 @@ public class SpringSecurity
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
+    }
+
+    //Define the bean for the AuthenticationManager
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 }

@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -22,16 +23,18 @@ public class BookController {
     private BookServiceImpl bookService;
 
 
-    public BookController(BookServiceImpl bookService) {
+    public BookController(BookServiceImpl bookService)
+    {
         this.bookService = bookService;
     }
 
 
     @PostMapping
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('AUTHOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR')")
     public ResponseEntity<Response<Book>> createBook(@Valid @RequestBody Book book) {
         Response<Book> response = new Response<>();
-        try {
-            // Directly call the service method
+
             Book createBook = bookService.createBook(book);
 
             response.setSuccess(true);
@@ -40,17 +43,16 @@ public class BookController {
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.BadRequestException e) {
-            throw new CustomExceptions.BadRequestException("Book Title must required");
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            throw new CustomExceptions.ResourceNotFoundException("Book with ID " + book.getId() + " already exists.");
-        }
+
     }
 
+
+
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR','USER')")
     public ResponseEntity<Response<List<Book>>> getAllBooks() {
         Response<List<Book>> response = new Response<>();
-        try {
+
             List<Book> books = bookService.getAllBooks();
             // Populate the success response
             response.setSuccess(true);
@@ -59,16 +61,14 @@ public class BookController {
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            throw new CustomExceptions.ResourceNotFoundException("No Books Found in the System");
-        }
+
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR','USER')")
     public ResponseEntity<Response<Book>> getBookById(@PathVariable String id) {
         Response<Book> response = new Response<>();
-        try {
-            //Call the service method
+
             Book book = bookService.getBookById(id);
             response.setSuccess(true);
             response.setMessage("Book retrieved successfully.");
@@ -76,69 +76,46 @@ public class BookController {
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            throw new CustomExceptions.ResourceNotFoundException("No Book Find With given ID");
-        }
+
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR')")
     public ResponseEntity<Response<Book>> updateBook(@PathVariable String id, @Valid @RequestBody Book book) {
         Response<Book> response = new Response<>();
-        try {
-            // Call the service method
+
             Book updatebook = bookService.updateBook(id, book);
 
-            // Populate the success response
+
             response.setSuccess(true);
             response.setMessage("Book Information updated successfully.");
             response.setData(updatebook);
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            // Handle specific exception
-            throw new CustomExceptions.ResourceNotFoundException("Book not found with ID: " + id);
-        }
+
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR')")
     public ResponseEntity<Response<Void>> deleteBook(@PathVariable String id) {
         Response<Void> response = new Response<>();
-        try {
-            // Call the service method
+
             bookService.deleteBook(id);
-            // Populate the success response
+
             response.setSuccess(true);
             response.setMessage("Book deleted successfully.");
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            // Handle specific exception
-            throw new CustomExceptions.ResourceNotFoundException("Book not found with ID: " + id);
-        }
+
     }
 
-    @GetMapping("author/{authorId}")
-    public ResponseEntity<Response<List<Book>>> getBooksByAuthor(@PathVariable String authorId) {
-        try {
-            Response<List<Book>> response = new Response<>();
-            List<Book> books = bookService.getBooksByAuthor(authorId);
-            // Populate the success response
-            response.setSuccess(true);
-            response.setMessage("Books fatched  successfully with with author ID " + authorId);
-            response.setError(null);
-            response.setHttpErrorCode(HttpStatus.OK.value());
-            response.setData(books);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            // Handle specific exception
-            throw new CustomExceptions.ResourceNotFoundException("Book not found with author ID: " + authorId);
-        }
-    }
+
 
     @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR','USER')")
     public ResponseEntity<Response<List<Book>>> filterBooks
             (@RequestParam(required = false) String title,
              @RequestParam(required = false) String genre,

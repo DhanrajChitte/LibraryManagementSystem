@@ -41,6 +41,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(CustomExceptions.ForbiddenException.class)
+    public ResponseEntity<Response<Object>> handleForbiddenException
+            (CustomExceptions.ForbiddenException ex,WebRequest request)
+    {
+        Response<Object> response = new Response<>();
+        response.setSuccess(false);
+        response.setMessage(ex.getMessage());
+        response.setError("Forbidden");
+        response.setHttpErrorCode(HttpStatus.FORBIDDEN.value());
+        response.setData(null);
+
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(CustomExceptions.AccessDeniedException.class)
+    public ResponseEntity<Response<Object>> handleCustomAccessDeniedException(CustomExceptions.AccessDeniedException ex, WebRequest request) {
+        Response<Object> response = new Response<>();
+        response.setSuccess(false);
+        response.setMessage(ex.getMessage());
+        response.setError("Access Denied");
+        response.setHttpErrorCode(HttpStatus.FORBIDDEN.value());
+        response.setData(null);
+
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(CustomExceptions.InternalServerException.class)
     public ResponseEntity<Response<Object>> handleInternalServerException(CustomExceptions.InternalServerException ex) {
         Response<Object> response = new Response<>();

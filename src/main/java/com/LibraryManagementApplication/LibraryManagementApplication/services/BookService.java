@@ -16,7 +16,7 @@ public interface BookService
 
     public void deleteBook(String id);
 
-    public List<Book> getBooksByAuthor(String authorId);
+
 
     List<Book> filterBooksByTitle(List<Book>books,String title);
 

@@ -4,9 +4,12 @@ package com.LibraryManagementApplication.LibraryManagementApplication.services.i
 import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.CustomExceptions;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Author;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Book;
+import com.LibraryManagementApplication.LibraryManagementApplication.repositories.AuthorRepository;
 import com.LibraryManagementApplication.LibraryManagementApplication.repositories.BookRepository;
 import com.LibraryManagementApplication.LibraryManagementApplication.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.rmi.UnexpectedException;
@@ -19,18 +22,52 @@ public class BookServiceImpl implements BookService {
     @Autowired
     private final BookRepository bookRepository;
 
-    public BookServiceImpl(BookRepository bookRepository) {
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    public BookServiceImpl(BookRepository bookRepository)
+    {
         this.bookRepository = bookRepository;
     }
 
     @Override
-    public Book createBook(Book book) {
-        if (book == null || book.getTitle() == null || book.getTitle().isEmpty()) {
+    public Book createBook(Book book)
+    {
+        boolean authorExists=authorRepository.existsById(book.getAuthorId());
+
+        if(!authorExists)
+        {
+            throw new CustomExceptions.ResourceNotFoundException("Author with ID " +book.getAuthorId() + " does not exits in the Author Collection ");
+        }
+
+        if (book == null || book.getTitle() == null || book.getTitle().isEmpty())
+        {
             throw new CustomExceptions.BadRequestException("Book title must be required");
         }
-        if (bookRepository.existsById(book.getId())) {
+
+
+        if (bookRepository.existsById(book.getId()))
+        {
             throw new CustomExceptions.ResourceNotFoundException("Book with ID" + book.getId() + " already exists.");
         }
+
+        //Fetch the currently logged in User
+        //Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
+        //String loggedInUsername=authentication.getName();
+
+       // Author author = authorRepository.findById(book.getAuthorId())
+             //   .orElseThrow(() -> new CustomExceptions.ResourceNotFoundException("Author not found."));
+
+       //check if the logged in user is either admin or the author of the book
+
+       // if (!authentication.getAuthorities().stream().anyMatch
+            //    (grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            // Only allow the author of the book or admin to add this book
+            //if (!author.getUserInfo().getName().equals(loggedInUsername)) {
+              //  throw new CustomExceptions.ForbiddenException("You can only create books for your own authorship.");
+           // }
+        //}
+
         return bookRepository.save(book);
     }
 
@@ -54,6 +91,13 @@ public class BookServiceImpl implements BookService {
     public Book updateBook(String id, Book book) {
         // Fetch the existing book or throw an exception if not found
         Book existingBook = getBookById(id);
+
+       boolean authorExists=authorRepository.existsById(book.getAuthorId());
+
+       if(!authorExists)
+        {
+            throw new CustomExceptions.ResourceNotFoundException("Author with ID " +book.getAuthorId() + " does not exits in the Author Collection ");
+        }
 
         // Update only the modified fields
         if (book.getTitle() != null && !book.getTitle().isEmpty()) {
@@ -82,15 +126,7 @@ public class BookServiceImpl implements BookService {
         bookRepository.delete(book);
     }
 
-    @Override
-    public List<Book> getBooksByAuthor(String authorId) {
-        List<Book> book = bookRepository.findByAuthorId(authorId);
-        if (book.isEmpty()) {
-            throw new CustomExceptions.ResourceNotFoundException("Book not found with author ID: " + authorId);
-        }
-        return book;
-        //return bookRepository.findByAuthorId(authorId);
-    }
+
 
     @Override
     public List<Book> filterBooks(String title, String genre, Integer publishedYear, Integer startYear, Integer endYear) {

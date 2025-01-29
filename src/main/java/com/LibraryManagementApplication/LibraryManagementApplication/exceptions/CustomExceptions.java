@@ -29,4 +29,18 @@ public class CustomExceptions
             super(message);
         }
     }
+
+    public static class ForbiddenException extends RuntimeException
+    {
+        public ForbiddenException(String message)
+        {
+            super(message);
+        }
+    }
+
+    public static class AccessDeniedException extends RuntimeException {
+        public AccessDeniedException(String message) {
+            super(message);
+        }
+    }
 }

@@ -15,16 +15,16 @@ public class UserInfoUserDetails implements UserDetails
 
     // From the database take the name, passs and role and convert to it and give to the
     // UserInfoUserDetails
-    private String name;
+    private String email;
     private String password;
     private List<GrantedAuthority> authorities;
 
     public UserInfoUserDetails(UserInfo userInfo)
     {
-        name=userInfo.getName();
-        password=userInfo.getPassword();
+        this.email=userInfo.getEmail();
+        this.password=userInfo.getPassword();
         //Using the list we define the multiple roles to the single user
-        authorities= Arrays.stream(userInfo.getRoles().split(","))
+        this.authorities= Arrays.stream(userInfo.getRoles().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }
@@ -40,7 +40,23 @@ public class UserInfoUserDetails implements UserDetails
     }
 
     @Override
-    public String getUsername() {
-        return name;
+    public String getUsername()
+        {
+          return email;
+        }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Default implementation, change based on your needs
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Default implementation, change based on your needs
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; // Default implementation, change based on your needs
     }
 }

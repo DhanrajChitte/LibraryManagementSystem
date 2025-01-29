@@ -3,6 +3,7 @@ package com.LibraryManagementApplication.LibraryManagementApplication.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 //import jakarta.persistence.PrePersist;
@@ -18,6 +19,9 @@ import java.util.UUID;
         private String name;
 
         private String bio;
+
+       // @DBRef
+        private UserInfo userInfo;
 
         public Author()
         {
@@ -59,6 +63,12 @@ import java.util.UUID;
             this.bio = bio;
         }
 
+        public UserInfo getUserInfo() {
+            return userInfo;
+        }
 
+        public void setUserInfo(UserInfo userInfo) {
+            this.userInfo = userInfo;
+        }
     }
 

@@ -2,10 +2,12 @@ package com.LibraryManagementApplication.LibraryManagementApplication.controller
 
 import com.LibraryManagementApplication.LibraryManagementApplication.dto.AuthRequest;
 import com.LibraryManagementApplication.LibraryManagementApplication.exceptions.CustomExceptions;
+import com.LibraryManagementApplication.LibraryManagementApplication.models.Book;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Response;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.Author;
 import com.LibraryManagementApplication.LibraryManagementApplication.models.UserInfo;
 import com.LibraryManagementApplication.LibraryManagementApplication.services.impl.AuthorServiceImpl;
+import com.LibraryManagementApplication.LibraryManagementApplication.services.impl.BookServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,14 +29,16 @@ public class AuthorController
     private AuthorServiceImpl authorService;
 
     @Autowired
+    private BookServiceImpl bookService;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<Author>> createAuthor(@Valid @RequestBody Author author) {
         Response<Author> response = new Response<>();
-        try {
-            // Directly call the service method
+
             Author createdAuthor = authorService.createAuthor(author);
 
             response.setSuccess(true);
@@ -43,38 +47,31 @@ public class AuthorController
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.BadRequestException e) {
-            throw new CustomExceptions.BadRequestException("Author details are invalid.");
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            throw new CustomExceptions.ResourceNotFoundException("Author with ID " + author.getId() + " already exists.");
-        }
+
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER','AUTHOR')")
     public ResponseEntity<Response<List<Author>>> getAllAuthors() {
         Response<List<Author>> response = new Response<>();
-        try {
+
             List<Author> authors = authorService.getAllAuthors();
-            // Populate the success response
+
             response.setSuccess(true);
             response.setMessage("Authors retrieved successfully.");
             response.setData(authors);
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            throw new CustomExceptions.ResourceNotFoundException("No Authors Found in the System");
-        }
+
     }
 
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER','AUTHOR')")
     public ResponseEntity<Response<Author>> getAuthorById(@PathVariable String id) {
         Response<Author> response = new Response<>();
-        try {
-            //Call the service method
+
             Author author = authorService.getAuthorById(id);
             response.setSuccess(true);
             response.setMessage("Author retrieved successfully.");
@@ -82,80 +79,95 @@ public class AuthorController
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            // Handle specific exception and throw with a custom message
-            throw new CustomExceptions.ResourceNotFoundException("No Author Found with ID:" + id);
-        }
+
     }
 
 
-    // PUT: /api/authors/{id}
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<Author>> updateAuthor(@PathVariable String id, @Valid @RequestBody Author author) {
         Response<Author> response = new Response<>();
-        try {
-            // Call the service method
+
             Author updatedAuthor = authorService.updateAuthor(id, author);
 
-            // Populate the success response
+
             response.setSuccess(true);
             response.setMessage("Author updated successfully.");
             response.setData(updatedAuthor);
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (CustomExceptions.ResourceNotFoundException e) {
-            // Handle specific exception
-            throw new CustomExceptions.ResourceNotFoundException("Author not found with ID: " + id);
-        }
+
     }
 
-    // DELETE: /api/authors/{id}
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<Void>> deleteAuthor(@PathVariable String id) {
         Response<Void> response = new Response<>();
-        try {
-            // Call the service method
+
             authorService.deleteAuthor(id);
-            // Populate the success response
+
             response.setSuccess(true);
             response.setMessage("Author deleted successfully.");
             response.setError(null);
             response.setHttpErrorCode(HttpStatus.OK.value());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } 
-        catch (CustomExceptions.ResourceNotFoundException e) {
-            // Handle specific exception
-            throw new CustomExceptions.ResourceNotFoundException("Author not found with ID: " + id);
-        }
+
 
     }
 
+    @GetMapping("/{authorId}/books")
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR','USER')")
+    public ResponseEntity<Response<List<Book>>> getBooksByAuthor(@PathVariable String authorId) {
+        try {
+            Response<List<Book>> response = new Response<>();
+            List<Book> books = authorService.getBooksByAuthor(authorId);
+            // Populate the success response
+            response.setSuccess(true);
+            response.setMessage("Books fetched  successfully with author ID " + authorId);
+            response.setError(null);
+            response.setHttpErrorCode(HttpStatus.OK.value());
+            response.setData(books);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (CustomExceptions.ResourceNotFoundException e) {
+            // Handle specific exception
+            throw new CustomExceptions.ResourceNotFoundException("Book not found with author ID: " + authorId);
+        }
+    }
+
     @PostMapping("/new")
-    public String addNewUser(@RequestBody UserInfo userInfo)
+    public ResponseEntity<Response <String>> addNewUser(@RequestBody UserInfo userInfo)
     {
-        return authorService.addUser(userInfo);
+        Response<String> response = new Response<>();
+        //try {
+        // Directly call the service method
+        String result = authorService.addUser(userInfo);
+
+        response.setSuccess(true);
+        response.setMessage("User added successfully for the authentication");
+        response.setData(result);
+        response.setError(null);
+        response.setHttpErrorCode(HttpStatus.OK.value());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 
     @PostMapping("/authenticate")
-    public String authenticateAndGetToken(@RequestBody AuthRequest authRequest)
+    public ResponseEntity<Response<String>> authenticateAndGetToken(@RequestBody AuthRequest authRequest)
     {
-        //return the authentication object no need to the if statement
-        Authentication authentication= authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.
-               getUsername(),authRequest.getPassword()));
+        Response<String> response=new Response<>();
 
-        if(authentication.isAuthenticated())
-        {
-            return authorService.generateToken(authRequest.getUsername());
-        }
+        String token = authorService.authenticateUser(authRequest);
 
-        else {
-            throw new UsernameNotFoundException("Invalid User Request! ");
-        }
+        response.setSuccess(true);
+        response.setMessage("Authentication successful");
+        response.setData(token);
+        response.setError(null);
+        response.setHttpErrorCode(HttpStatus.OK.value());
 
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

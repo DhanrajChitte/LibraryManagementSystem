@@ -58,15 +58,16 @@ public class SpringSecurity
         return http.csrf(AbstractHttpConfigurer::disable)
                   .authorizeHttpRequests(authorize->authorize
                   .requestMatchers("/api/authors/new","/api/authors/authenticate").permitAll()
-                  //.requestMatchers("/api/authors/**").authenticated()
+
                                   .anyRequest().authenticated()
                   )
               .sessionManagement(session->session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
               )
+                .cors(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-                // .httpBasic(Customizer.withDefaults())
+                .httpBasic(Customizer.withDefaults())
                  // .formLogin(Customizer.withDefaults())
                         .build();
     }

@@ -2,6 +2,7 @@ package com.LibraryManagementApplication.LibraryManagementApplication.models;
 
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="UserInfo")
@@ -14,6 +15,7 @@ public class UserInfo
 
     private String password;
 
+    @Indexed(unique = true)
     private String email;
 
     private String roles;
